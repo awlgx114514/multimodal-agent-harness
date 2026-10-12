@@ -1,0 +1,12 @@
+.git
+.venv
+web/.next
+node_modules
+web/node_modules
+tests
+artifacts
+.cache
+!.cache
+.cache/*
+!.cache/node-dist.tar.xz
+*.log

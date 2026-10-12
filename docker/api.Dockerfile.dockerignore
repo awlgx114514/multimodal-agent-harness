@@ -1,0 +1,9 @@
+.git
+.venv
+.next
+node_modules
+web
+tests
+artifacts
+.cache
+*.log

@@ -1,0 +1,77 @@
+{{- if .Values.grafanaDashboard.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: industrial-ops-production-overview
+  labels:
+    {{ .Values.grafanaDashboard.label }}: {{ .Values.grafanaDashboard.labelValue | quote }}
+    app.kubernetes.io/name: industrial-ops-observability
+    app.kubernetes.io/part-of: industrial-ops-agent-platform
+data:
+  industrial-ops-production-overview.json: |-
+    {
+      "annotations": {"list": []},
+      "editable": false,
+      "graphTooltip": 1,
+      "links": [],
+      "panels": [
+        {
+          "datasource": {"type": "prometheus", "uid": "${datasource}"},
+          "fieldConfig": {"defaults": {"max": 1, "min": 0, "unit": "percentunit"}},
+          "gridPos": {"h": 6, "w": 6, "x": 0, "y": 0},
+          "id": 1,
+          "targets": [{"expr": "1 - (sum(increase(ioap_http_requests_total{status=~\"5..\"}[30d])) / sum(increase(ioap_http_requests_total[30d])))", "refId": "A"}],
+          "title": "业务 API 30 天可用性",
+          "type": "gauge"
+        },
+        {
+          "datasource": {"type": "prometheus", "uid": "${datasource}"},
+          "fieldConfig": {"defaults": {"unit": "s"}},
+          "gridPos": {"h": 6, "w": 6, "x": 6, "y": 0},
+          "id": 2,
+          "targets": [{"expr": "histogram_quantile(0.95, sum by (le) (rate(ioap_http_request_duration_seconds_bucket[5m])))", "refId": "A"}],
+          "title": "API P95 延迟",
+          "type": "stat"
+        },
+        {
+          "datasource": {"type": "prometheus", "uid": "${datasource}"},
+          "gridPos": {"h": 6, "w": 6, "x": 12, "y": 0},
+          "id": 3,
+          "targets": [{"expr": "sum(ALERTS{alertstate=\"firing\",severity=\"critical\"})", "refId": "A"}],
+          "title": "正在触发的关键告警",
+          "type": "stat"
+        },
+        {
+          "datasource": {"type": "prometheus", "uid": "${datasource}"},
+          "fieldConfig": {"defaults": {"unit": "percentunit"}},
+          "gridPos": {"h": 9, "w": 12, "x": 0, "y": 6},
+          "id": 5,
+          "targets": [{"expr": "sum(rate(ioap_inference_requests_total{status=\"success\"}[5m])) / sum(rate(ioap_inference_requests_total[5m]))", "legendFormat": "推理成功率", "refId": "A"}],
+          "title": "模型推理服务",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {"type": "prometheus", "uid": "${datasource}"},
+          "gridPos": {"h": 9, "w": 12, "x": 12, "y": 6},
+          "id": 6,
+          "targets": [
+            {"expr": "max(DCGM_FI_DEV_GPU_TEMP) by (gpu)", "legendFormat": "GPU {{ "{{gpu}}" }} 温度", "refId": "A"},
+            {"expr": "sum(ioap_model_cost_usd_per_hour)", "legendFormat": "每小时模型成本", "refId": "B"}
+          ],
+          "title": "GPU 健康与模型成本",
+          "type": "timeseries"
+        },
+      ],
+      "refresh": "30s",
+      "schemaVersion": 41,
+      "tags": ["industrial-ops", "slo", "ai-runtime"],
+      "templating": {
+        "list": [{"current": {}, "label": "Prometheus", "name": "datasource", "query": "prometheus", "type": "datasource"}]
+      },
+      "time": {"from": "now-6h", "to": "now"},
+      "timezone": "browser",
+      "title": "工业运维 Agent · 生产 SLO 总览",
+      "uid": "industrial-ops-production",
+      "version": 2
+    }
+{{- end }}

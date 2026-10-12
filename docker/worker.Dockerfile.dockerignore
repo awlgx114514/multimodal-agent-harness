@@ -1,0 +1,12 @@
+.git
+.venv
+.next
+node_modules
+web
+tests
+.cache
+!.cache
+.cache/*
+!.cache/docling-artifacts
+!.cache/docling-artifacts/**
+*.log
